@@ -1,7 +1,9 @@
 package com.pimentelprojects.productivitymaster.bot;
 
 
+import com.pimentelprojects.productivitymaster.models.Task;
 import com.pimentelprojects.productivitymaster.models.UserEntity;
+import com.pimentelprojects.productivitymaster.services.TaskService;
 import com.pimentelprojects.productivitymaster.services.UserEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,8 @@ import static com.pimentelprojects.productivitymaster.bot.ScheduledMessage.sendM
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final UserEntityService entityService;
+
+    private final TaskService taskService;
 
 
     @Override
@@ -87,24 +91,24 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case 'm':
 
                             date.add(Calendar.MINUTE, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
                             break;
                         case 's':
 
                             date.add(Calendar.SECOND, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
                             break;
 
                         case 'h':
 
                             date.add(Calendar.HOUR, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
                             break;
 
                         case 'd':
 
                             date.add(Calendar.DAY_OF_MONTH, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
                             break;
                         default:
                             try {
@@ -136,21 +140,27 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                     if (entityService.existById(lons)) {
 
-                        UserEntity entity2 = entityService.getById(lons);
-                        List<String> taskList = entity2.getTasks();
-                        taskList.add(taskNotSpaces);
-                        entity2.setTasks(taskList);
-                        entityService.createUser(entity2);
+//                        UserEntity entity2 = entityService.getById(lons);
+//                        List<Task> taskList = entity2.getTasks();
+//                        taskList.add(Task.builder().name(taskNotSpaces).userEntity(entity2).build());
+//                        entity2.setTasks(taskList);
+//                        entityService.createUser(entity2);
 
+                        taskService.createTask(Task.builder().name(taskNotSpaces).userEntity(entityService.getById(lons)).build());
 
                     } else {
+
+
                         UserEntity entity = UserEntity.builder()
                                 .id(lons)
                                 .username(user.getUserName())
-                                .tasks(List.of(taskNotSpaces))
                                 .build();
 
                         entityService.createUser(entity);
+
+                        taskService.createTask(Task.builder().name(taskNotSpaces).userEntity(entity).build());
+
+
                     }
 
                     sendNotification(chatId, "Tarea creada exitosamente");
@@ -162,12 +172,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (msg.startsWith("/tasks")) {
                 if (entityService.existById(lons)) {
-                    UserEntity user1 = entityService.getById(lons);
-                    List<String> usersTask = user1.getTasks();
+                    List<Task> usersTask = taskService.getAllTask(entityService.getById(lons));
                     StringBuilder taskToString = new StringBuilder();
 
-                    for (int i = 0; i < usersTask.size(); i++) {
-                        taskToString.append(i + 1).append(": ").append(usersTask.get(i)).append("\n");
+                    for (Task task : usersTask) {
+                        taskToString.append(task.getId()).append(": ").append(task.getName()).append("\n");
                     }
 
                     try {

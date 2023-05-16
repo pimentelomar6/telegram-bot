@@ -17,5 +17,6 @@ public class UserEntity {
     @Id
     private Long id;
     private String username;
-    private List<String> tasks;
+    @OneToMany(mappedBy="userEntity")
+    private List<Task> tasks;
 }
