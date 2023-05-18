@@ -43,9 +43,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             Message message = update.getMessage();
 
             User user = message.getFrom();
-            System.out.println(user);
             Long lons = user.getId();
-            System.out.println(lons);
 
             String chatId = message.getChatId().toString();
             String msg = message.getText();
@@ -91,18 +89,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case 'm':
 
                             date.add(Calendar.MINUTE, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
                             break;
                         case 's':
 
                             date.add(Calendar.SECOND, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
                             break;
 
                         case 'h':
 
                             date.add(Calendar.HOUR, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService,taskService));
+                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
                             break;
 
                         case 'd':
@@ -140,16 +138,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                     if (entityService.existById(lons)) {
 
-//                        UserEntity entity2 = entityService.getById(lons);
-//                        List<Task> taskList = entity2.getTasks();
-//                        taskList.add(Task.builder().name(taskNotSpaces).userEntity(entity2).build());
-//                        entity2.setTasks(taskList);
-//                        entityService.createUser(entity2);
-
                         taskService.createTask(Task.builder().name(taskNotSpaces).userEntity(entityService.getById(lons)).build());
 
                     } else {
-
 
                         UserEntity entity = UserEntity.builder()
                                 .id(lons)
@@ -167,6 +158,140 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
+
+            }
+
+            if (msg.startsWith("/edittask") && msg.length() > 9) {
+
+                String task = msg.substring(9).trim();
+                System.out.println(task);
+                String taskNotSpaces = task.replaceAll("\\s+", " ");
+                System.out.println(taskNotSpaces);
+
+                if (entityService.existById(lons)) {
+                    Pattern pattern = Pattern.compile("^\\d\\s.*$");
+                    Matcher matcher = pattern.matcher(taskNotSpaces);
+
+                    if (matcher.matches()) {
+                        String[] taskToArray = taskNotSpaces.split(" ");
+
+                        Long taskId = Long.parseLong(taskToArray[0]);
+
+                        StringBuilder taskEditBuilder = new StringBuilder();
+
+                        for (int i = 1; i < taskToArray.length; i++) {
+                            taskEditBuilder.append(taskToArray[i]);
+                            if (!(i == taskToArray.length - 1)) {
+                                taskEditBuilder.append(" ");
+                            }
+                        }
+                        if (taskService.existById(taskId)) {
+
+                            if (lons.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
+                                Task taskEdit = taskService.getTaskById(taskId);
+                                taskEdit.setName(taskEditBuilder.toString());
+                                taskService.createTask(taskEdit);
+
+                                try {
+                                    sendNotification(chatId, "Se ha editado la tarea exitosamente");
+                                } catch (TelegramApiException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                            } else {
+                                try {
+                                    sendNotification(chatId, "Error al editar la tarea con el id proporcionado");
+                                } catch (TelegramApiException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        } else {
+                            try {
+                                sendNotification(chatId, "El id de la tarea no esta registrado");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    } else {
+                        try {
+                            sendNotification(chatId, "Para editar una tarea escriba /edittask seguido del id de la tarea mas el texto por el cual sera reemplazado");
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+
+                } else {
+
+                    try {
+                        sendNotification(chatId, "No se ha creado ninguna tarea con tu usuario");
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+
+
+            }
+
+            if (msg.startsWith("/deletetask") && msg.length() > 11) {
+
+                String taskDelete = msg.substring(11).trim();
+
+
+                if (entityService.existById(lons)) {
+                    Pattern pattern = Pattern.compile("^\\d");
+                    Matcher matcher = pattern.matcher(taskDelete);
+
+                    if (matcher.matches()) {
+
+                        Long taskId = Long.parseLong(taskDelete);
+
+
+                        if (taskService.existById(taskId)) {
+
+                            if (lons.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
+                                taskService.deleteTaskById(taskId);
+
+                                try {
+                                    sendNotification(chatId, "Se ha eliminado la tarea exitosamente");
+                                } catch (TelegramApiException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                            } else {
+                                try {
+                                    sendNotification(chatId, "Error al eliminar la tarea con el id proporcionado");
+                                } catch (TelegramApiException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        } else {
+                            try {
+                                sendNotification(chatId, "El id de la tarea no esta registrado");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    } else {
+                        try {
+                            sendNotification(chatId, "Para eliminar una tarea escriba /deletetask seguido del id de la tarea");
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+
+                } else {
+
+                    try {
+                        sendNotification(chatId, "No se ha creado ninguna tarea con tu usuario");
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+
 
             }
 
