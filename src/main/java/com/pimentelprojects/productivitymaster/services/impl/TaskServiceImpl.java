@@ -1,8 +1,9 @@
-package com.pimentelprojects.productivitymaster.services;
+package com.pimentelprojects.productivitymaster.services.impl;
 
 import com.pimentelprojects.productivitymaster.models.Task;
 import com.pimentelprojects.productivitymaster.models.UserEntity;
 import com.pimentelprojects.productivitymaster.repository.TaskRepository;
+import com.pimentelprojects.productivitymaster.services.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TaskServiceImpl implements TaskService{
+public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     @Override

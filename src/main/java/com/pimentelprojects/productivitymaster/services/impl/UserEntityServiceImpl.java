@@ -1,15 +1,16 @@
-package com.pimentelprojects.productivitymaster.services;
+package com.pimentelprojects.productivitymaster.services.impl;
 
 import com.pimentelprojects.productivitymaster.models.UserEntity;
 
 import com.pimentelprojects.productivitymaster.repository.UserEntityRepository;
+import com.pimentelprojects.productivitymaster.services.UserEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 @Service
 @RequiredArgsConstructor
-public class UserEntityServiceImpl implements UserEntityService{
+public class UserEntityServiceImpl implements UserEntityService {
 
     private final UserEntityRepository userEntityRepository;
 
