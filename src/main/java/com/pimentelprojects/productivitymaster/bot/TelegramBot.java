@@ -51,12 +51,72 @@ public class TelegramBot extends TelegramLongPollingBot {
             if (msg.startsWith("/start")) {
                 try {
 
-                    sendNotification(chatId, "mensaje generico de bienvenida");
+                    sendNotification(chatId, "Puedes controlarme enviando estos comandos:\n" +
+                            "\n" +
+                            "Tareas\n" +
+                            "/addtask – crear nueva tarea\n" +
+                            "/tasks – obtener lista de tareas \n" +
+                            "/edittask – modificar tarea creada\n" +
+                            "/deletetask – borrar tarea\n" +
+                            "\n" +
+                            "Alertas\n" +
+                            "/addalert – crear una nueva alerta\n");
 
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
 
+            }
+
+            if(msg.equals("/addalert")){
+                try {
+                    sendNotification(chatId,"Utilice este formato para crear alertas:\n" +
+                            "/addalert Tiempo + Texto\n" +
+                            "\n" +
+                            "'Tiempo' puede ser uno de los siguientes:\n" +
+                            "- El número de segundos, minutos, horas o días para la alerta en forma de 23m, 3h, 5d o 2s respectivamente.\n" +
+                            "'Texto' es cualquier cosa que quieras que el bot te diga.\n" +
+                            "Ejemplo: /addalert 2m hacer mis deberes\n");
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if(msg.equals("/addtask")){
+                try {
+                    sendNotification(chatId,"Utilice este formato para crear tareas:\n" +
+                            "/addtask Texto\n" +
+                            "\n" +
+                            "'Texto' es cualquier tarea que quieras guardar.\n" +
+                            "Ejemplo: /addtask sacar la basura\n");
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if(msg.equals("/edittask")){
+                try {
+                    sendNotification(chatId,"Utilice este formato para editar tareas:\n" +
+                            "/edittask Id + Texto\n" +
+                            "\n" +
+                            "'Id' número de identificación de la tarea generado al consultar el listado.\n" +
+                            "'Texto' es cualquier cosa que quieras modificar de la tarea en cuestión.\n" +
+                            "Ejemplo: /edittask 2 no hacer mis deberes\n");
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if(msg.equals("/deletetask")){
+                try {
+                    sendNotification(chatId,"Utilice este formato para eliminar tareas:\n" +
+                            "/deletealert Id \n" +
+                            "\n" +
+                            "'Id' número de identificación de la tarea generado al consultar el listado.\n" +
+                            "Ejemplo: /deletetask 2 \n");
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             if (msg.startsWith("/addalert") && msg.length() > 9) {
@@ -110,7 +170,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             break;
                         default:
                             try {
-                                sendNotification(chatId, "error");
+                                sendNotification(chatId, "No se reconoce el formato utilizado");
                             } catch (TelegramApiException e) {
                                 throw new RuntimeException(e);
                             }
@@ -119,7 +179,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 } else {
                     try {
-                        sendNotification(chatId, "pattern incorrect");
+                        sendNotification(chatId, "El formato del texto introducido no es valido");
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
