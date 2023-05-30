@@ -43,130 +43,147 @@ public class TelegramBot extends TelegramLongPollingBot {
             Message message = update.getMessage();
 
             User user = message.getFrom();
-            Long lons = user.getId();
+            Long userId = user.getId();
 
             String chatId = message.getChatId().toString();
             String msg = message.getText();
 
-            if (msg.startsWith("/start")) {
-                try {
+            switch (msg){
+                case "/start":
+                    try {
 
-                    sendNotification(chatId, "Puedes controlarme enviando estos comandos:\n" +
-                            "\n" +
-                            "Tareas\n" +
-                            "/addtask – crear nueva tarea\n" +
-                            "/tasks – obtener lista de tareas \n" +
-                            "/edittask – modificar tarea creada\n" +
-                            "/deletetask – borrar tarea\n" +
-                            "\n" +
-                            "Alertas\n" +
-                            "/addalert – crear una nueva alerta\n");
+                        sendNotification(chatId, """
+                                Puedes controlarme enviando estos comandos:
 
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
+                                Tareas
+                                /addtask – crear nueva tarea
+                                /tasks – obtener lista de tareas\s
+                                /edittask – modificar tarea creada
+                                /deletetask – borrar tarea
 
-            }
+                                Alertas
+                                /addalert – crear una nueva alerta
+                                """);
 
-            if(msg.equals("/addalert")){
-                try {
-                    sendNotification(chatId,"Utilice este formato para crear alertas:\n" +
-                            "/addalert Tiempo + Texto\n" +
-                            "\n" +
-                            "'Tiempo' puede ser uno de los siguientes:\n" +
-                            "- El número de segundos, minutos, horas o días para la alerta en forma de 23m, 3h, 5d o 2s respectivamente.\n" +
-                            "'Texto' es cualquier cosa que quieras que el bot te diga.\n" +
-                            "Ejemplo: /addalert 2m hacer mis deberes\n");
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "/addalert":
+                    try {
+                        sendNotification(chatId, """
+                                Utilice este formato para crear alertas:
+                                /addalert Tiempo + Texto
 
-            if(msg.equals("/addtask")){
-                try {
-                    sendNotification(chatId,"Utilice este formato para crear tareas:\n" +
-                            "/addtask Texto\n" +
-                            "\n" +
-                            "'Texto' es cualquier tarea que quieras guardar.\n" +
-                            "Ejemplo: /addtask sacar la basura\n");
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+                                'Tiempo' puede ser uno de los siguientes:
+                                - El número de segundos, minutos, horas o días para la alerta en forma de 23m, 3h, 5d o 2s respectivamente.
+                                'Texto' es cualquier cosa que quieras que el bot te diga.
+                                Ejemplo: /addalert 2m hacer mis deberes
+                                """);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "/addtask":
+                    try {
+                        sendNotification(chatId, """
+                                Utilice este formato para crear tareas:
+                                /addtask Texto
 
-            if(msg.equals("/edittask")){
-                try {
-                    sendNotification(chatId,"Utilice este formato para editar tareas:\n" +
-                            "/edittask Id + Texto\n" +
-                            "\n" +
-                            "'Id' número de identificación de la tarea generado al consultar el listado.\n" +
-                            "'Texto' es cualquier cosa que quieras modificar de la tarea en cuestión.\n" +
-                            "Ejemplo: /edittask 2 no hacer mis deberes\n");
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+                                'Texto' es cualquier tarea que quieras guardar.
+                                Ejemplo: /addtask sacar la basura
+                                """);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "/edittask":
+                    try {
+                        sendNotification(chatId, """
+                                Utilice este formato para editar tareas:
+                                /edittask Id + Texto
 
-            if(msg.equals("/deletetask")){
-                try {
-                    sendNotification(chatId,"Utilice este formato para eliminar tareas:\n" +
-                            "/deletealert Id \n" +
-                            "\n" +
-                            "'Id' número de identificación de la tarea generado al consultar el listado.\n" +
-                            "Ejemplo: /deletetask 2 \n");
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
+                                'Id' número de identificación de la tarea generado al consultar el listado.
+                                'Texto' es cualquier cosa que quieras modificar de la tarea en cuestión.
+                                Ejemplo: /edittask 2 no hacer mis deberes
+                                """);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case "/deletetask":
+                    try {
+                        sendNotification(chatId, """
+                                Utilice este formato para eliminar tareas:
+                                /deletealert Id\s
+
+                                'Id' número de identificación de la tarea generado al consultar el listado.
+                                Ejemplo: /deletetask 2\s
+                                """);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+
+
+
             }
 
             if (msg.startsWith("/addalert") && msg.length() > 9) {
-                // Limpiar string antes de cada comprobacion
 
-                String alert = msg.substring(9).trim();
-                String alertNotSpaces = alert.replaceAll("\\s+", " ");
-
-                Pattern pattern = Pattern.compile("^\\d{1,2}[smhd]\\s.*$");
-                Matcher matcher = pattern.matcher(alertNotSpaces);
+                String alert = cleanString(9,msg);
+                Matcher matcher = Pattern.compile("(\\d{1,2})([smhd])\\s(.*)").matcher(alert);
 
 
                 if (matcher.matches()) {
-                    String[] alertToArray = alertNotSpaces.split(" ");
 
-                    char time = alertToArray[0].charAt(alertToArray[0].length() - 1);
-                    int cantidad = Integer.parseInt(alertToArray[0].substring(0, alertToArray[0].length() - 1));
-
-                    StringBuilder stringBuilder = new StringBuilder();
-
-                    for (int i = 1; i < alertToArray.length; i++) {
-                        stringBuilder.append(alertToArray[i]);
-                        if (!(i == alertToArray.length - 1)) {
-                            stringBuilder.append(" ");
-                        }
-                    }
+                    int quantity = Integer.parseInt(matcher.group(1));
+                    char time = matcher.group(2).charAt(0);
+                    String messageAlert = matcher.group(3);
 
                     Calendar date = getCalendar();
                     switch (time) {
                         case 'm':
 
-                            date.add(Calendar.MINUTE, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
+                            date.add(Calendar.MINUTE, quantity);
+                            sendMessage(date.getTime(), messageAlert, chatId, new TelegramBot(entityService, taskService));
+                            try {
+                                sendNotification(chatId,"Alerta creada exitosamente");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
                         case 's':
 
-                            date.add(Calendar.SECOND, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
+                            date.add(Calendar.SECOND, quantity);
+                            sendMessage(date.getTime(), messageAlert, chatId, new TelegramBot(entityService, taskService));
+                            try {
+                                sendNotification(chatId,"Alerta creada exitosamente");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
 
                         case 'h':
 
-                            date.add(Calendar.HOUR, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
+                            date.add(Calendar.HOUR, quantity);
+                            sendMessage(date.getTime(), messageAlert, chatId, new TelegramBot(entityService, taskService));
+                            try {
+                                sendNotification(chatId,"Alerta creada exitosamente");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
 
                         case 'd':
 
-                            date.add(Calendar.DAY_OF_MONTH, cantidad);
-                            sendMessage(date.getTime(), stringBuilder.toString(), chatId, new TelegramBot(entityService, taskService));
+                            date.add(Calendar.DAY_OF_MONTH, quantity);
+                            sendMessage(date.getTime(), messageAlert, chatId, new TelegramBot(entityService, taskService));
+                            try {
+                                sendNotification(chatId,"Alerta creada exitosamente");
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
                         default:
                             try {
@@ -190,20 +207,18 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (msg.startsWith("/addtask") && msg.length() > 8) {
 
-                String task = msg.substring(8).trim();
-                String taskNotSpaces = task.replaceAll("\\s+", " ");
-
+                String taskNotSpaces = cleanString(8, msg);
 
                 try {
 
-                    if (entityService.existById(lons)) {
+                    if (entityService.existById(userId)) {
 
-                        taskService.createTask(Task.builder().name(taskNotSpaces).userEntity(entityService.getById(lons)).build());
+                        taskService.createTask(Task.builder().name(taskNotSpaces).userEntity(entityService.getById(userId)).build());
 
                     } else {
 
                         UserEntity entity = UserEntity.builder()
-                                .id(lons)
+                                .id(userId)
                                 .username(user.getUserName())
                                 .build();
 
@@ -223,33 +238,25 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (msg.startsWith("/edittask") && msg.length() > 9) {
 
-                String task = msg.substring(9).trim();
-                System.out.println(task);
-                String taskNotSpaces = task.replaceAll("\\s+", " ");
-                System.out.println(taskNotSpaces);
+                String taskNotSpaces = cleanString(9, msg);
 
-                if (entityService.existById(lons)) {
-                    Pattern pattern = Pattern.compile("^\\d\\s.*$");
-                    Matcher matcher = pattern.matcher(taskNotSpaces);
+                if (entityService.existById(userId)) {
 
-                    if (matcher.matches()) {
-                        String[] taskToArray = taskNotSpaces.split(" ");
+                    Matcher edit = Pattern.compile("(\\d+)\\s(.*)").matcher(taskNotSpaces);
 
-                        Long taskId = Long.parseLong(taskToArray[0]);
+                    if (edit.matches()) {
+                        Long taskId = Long.parseLong(edit.group(1));
 
-                        StringBuilder taskEditBuilder = new StringBuilder();
+                        String taskEditBuilder = edit.group(2);
 
-                        for (int i = 1; i < taskToArray.length; i++) {
-                            taskEditBuilder.append(taskToArray[i]);
-                            if (!(i == taskToArray.length - 1)) {
-                                taskEditBuilder.append(" ");
-                            }
-                        }
+                        System.out.println(taskId);
+                        System.out.println(taskEditBuilder);
+
                         if (taskService.existById(taskId)) {
 
-                            if (lons.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
+                            if (userId.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
                                 Task taskEdit = taskService.getTaskById(taskId);
-                                taskEdit.setName(taskEditBuilder.toString());
+                                taskEdit.setName(taskEditBuilder);
                                 taskService.createTask(taskEdit);
 
                                 try {
@@ -298,19 +305,16 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 String taskDelete = msg.substring(11).trim();
 
+                if (entityService.existById(userId)) {
 
-                if (entityService.existById(lons)) {
-                    Pattern pattern = Pattern.compile("^\\d");
-                    Matcher matcher = pattern.matcher(taskDelete);
-
-                    if (matcher.matches()) {
+                    if (taskDelete.matches("^\\d")) {
 
                         Long taskId = Long.parseLong(taskDelete);
 
 
                         if (taskService.existById(taskId)) {
 
-                            if (lons.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
+                            if (userId.equals(taskService.getTaskById(taskId).getUserEntity().getId())) {
                                 taskService.deleteTaskById(taskId);
 
                                 try {
@@ -356,8 +360,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
 
             if (msg.startsWith("/tasks")) {
-                if (entityService.existById(lons)) {
-                    List<Task> usersTask = taskService.getAllTask(entityService.getById(lons));
+                if (entityService.existById(userId)) {
+                    List<Task> usersTask = taskService.getAllTask(entityService.getById(userId));
                     StringBuilder taskToString = new StringBuilder();
 
                     for (Task task : usersTask) {
@@ -390,6 +394,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         Calendar date = Calendar.getInstance();
         date.setTime(date1);
         return date;
+    }
+
+    private String cleanString(int start, String msg){
+        return msg.substring(start).replaceAll("\\s+", " ").trim();
     }
 
 
