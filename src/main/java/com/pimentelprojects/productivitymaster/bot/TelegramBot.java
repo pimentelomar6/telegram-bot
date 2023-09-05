@@ -6,6 +6,7 @@ import com.pimentelprojects.productivitymaster.models.UserEntity;
 import com.pimentelprojects.productivitymaster.services.TaskService;
 import com.pimentelprojects.productivitymaster.services.UserEntityService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
@@ -28,7 +29,10 @@ import static com.pimentelprojects.productivitymaster.bot.ScheduledMessage.sendM
 @Component
 @RequiredArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
-
+   @Value("${bot_user}")
+    private String botUsername;
+    @Value("${bot_token}")
+    private String botToken;
     private final UserEntityService entityService;
 
     private final TaskService taskService;
@@ -411,12 +415,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "TaskMaster_bot";
+        return botUsername;
     }
 
 
     @Override
     public String getBotToken() {
-        return "6234177435:AAE5HX_XxJNDUaMbJO8ZJ-urqyQbmcK-1x8";
+        return botToken;
     }
 }
